@@ -6,7 +6,7 @@ Parameters:
     Default: /aws/service/ami-amazon-linux-latest/amzn2-ami-hvm-x86_64-gp2
     Description: Use an AMI of your choosing, we recommend to use the latest available
 Resources:
-  MonoToMicroVPC:
+  MonoToMicroVPC-drdemo:
     Type: AWS::EC2::VPC
     Properties:
       CidrBlock: 10.0.0.0/16
@@ -16,7 +16,7 @@ Resources:
       Tags:
         - Key: Name
           Value: MonoToMicroVPC-drdemo
-  MonoToMicroIGW:
+  MonoToMicroIGW-drdemo:
     Type: AWS::EC2::InternetGateway
     Properties:
       Tags:
@@ -27,7 +27,7 @@ Resources:
     Properties:
       VpcId: !Ref MonoToMicroVPC-drdemo
       InternetGatewayId: !Ref MonoToMicroIGW-drdemo
-  MonoToMicroSubnet1:
+  MonoToMicroSubnet1-drdemo:
     Type: AWS::EC2::Subnet
     Properties:
       VpcId: !Ref MonoToMicroVPC-drdemo
@@ -40,7 +40,7 @@ Resources:
       Tags:
         - Key: Name
           Value: MonoToMicroSubnet1-drdemo
-  MonoToMicroSubnet2:
+  MonoToMicroSubnet2-drdemo:
     Type: AWS::EC2::Subnet
     Properties:
       VpcId: !Ref MonoToMicroVPC-drdemo
@@ -53,31 +53,31 @@ Resources:
       Tags:
         - Key: Name
           Value: MonoToMicroSubnet2-drdemo
-  MonoToMicroPublicRoutTable:
+  MonoToMicroPublicRoutTable-drdemo:
     Type: AWS::EC2::RouteTable
     Properties:
       VpcId: !Ref MonoToMicroVPC-drdemo
       Tags:
         - Key: Name
           Value: MonoToMicroPublicRoute-drdemo
-  MonoToMicroPublicRout:
+  MonoToMicroPublicRout-drdemo:
     Type: AWS::EC2::Route
     DependsOn: AttachGateway
     Properties:
       RouteTableId: !Ref MonoToMicroPublicRoutTable-drdemo
       GatewayId: !Ref MonoToMicroIGW-drdemo
       DestinationCidrBlock: 0.0.0.0/0
-  MonoToMicroPublicSubnetRoutTableAssoc1:
+  MonoToMicroPublicSubnetRoutTableAssoc1-drdemo:
     Type: AWS::EC2::SubnetRouteTableAssociation
     Properties:
       RouteTableId: !Ref MonoToMicroPublicRoutTable-drdemo
       SubnetId: !Ref MonoToMicroSubnet1-drdemo
-  MonoToMicroPublicSubnetRoutTableAssoc2:
+  MonoToMicroPublicSubnetRoutTableAssoc2-drdemo:
     Type: AWS::EC2::SubnetRouteTableAssociation
     Properties:
       RouteTableId: !Ref MonoToMicroPublicRoutTable-drdemo
       SubnetId: !Ref MonoToMicroSubnet2-drdemo
-  DBSecurityGroup:
+  DBSecurityGroup-drdemo:
     Type: AWS::EC2::SecurityGroup
     Properties:
       GroupDescription: Open database for access
@@ -90,14 +90,14 @@ Resources:
       Tags:
         - Key: Name
           Value: MonoToMicroDBSG-drdemo
-  DBSubnetGroup:
+  DBSubnetGroup-drdemo:
     Type: AWS::RDS::DBSubnetGroup
     Properties:
       DBSubnetGroupDescription: MonoToMicroDBSubnetGroup-drdemo
       SubnetIds:
         - !Ref MonoToMicroSubnet1-drdemo
         - !Ref MonoToMicroSubnet2-drdemo
-  EC2SecurityGroup:
+  EC2SecurityGroup-drdemo:
     Type: AWS::EC2::SecurityGroup
     Properties:
       GroupDescription: Open App access
@@ -123,7 +123,7 @@ Resources:
       Tags:
         - Key: Name
           Value: MonoToMicroEC2SG-drdemo
-  EC2SecurityGroupDBRule:
+  EC2SecurityGroupDBRule-drdemo:
     Type: AWS::EC2::SecurityGroupEgress
     Properties:
       GroupId: !Ref EC2SecurityGroup-drdemo
@@ -131,20 +131,20 @@ Resources:
       FromPort: 3306
       ToPort: 3306
       DestinationSecurityGroupId: !Ref DBSecurityGroup-drdemo
-  InstanceLogGroup:
+  InstanceLogGroup-drdemo:
     Type: AWS::Logs::LogGroup
     Properties:
       RetentionInDays: 7
-  S3InstanceProfile:
+  S3InstanceProfile-drdemo:
     Type: AWS::IAM::InstanceProfile
     Properties:
       Path: /
       Roles:
         - !Ref S3Role
-  S3Policy:
+  S3Policy-drdemo:
     Type: AWS::IAM::Policy
     Properties:
-      PolicyName: S3Policy
+      PolicyName: S3Policy-drdemo
       PolicyDocument:
         Statement:
           - Effect: Allow
@@ -491,7 +491,7 @@ Resources:
       SubnetId: !Ref MonoToMicroSubnet1-drdemo
       SecurityGroupIds:
         - !Ref EC2SecurityGroup-drdemo
-      IamInstanceProfile: !Ref S3InstanceProfile
+      IamInstanceProfile: !Ref S3InstanceProfile-drdemo
       UserData: !Base64 
         'Fn::Join':
           - ''
@@ -523,7 +523,7 @@ Resources:
   PublicDnsNameSSMParam:
     Type: AWS::SSM::Parameter
     Properties:
-      Name: UniShopPublicDnsName
+      Name: UniShopPublicDnsName-drdemo
       Value: !Join 
         - /
         - - 'http:/'
