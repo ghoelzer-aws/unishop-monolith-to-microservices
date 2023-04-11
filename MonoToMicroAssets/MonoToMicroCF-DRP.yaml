@@ -1,12 +1,12 @@
 AWSTemplateFormatVersion: 2010-09-09
-Description: DR Example Monolith stack - Primary Deployment
+Description: Monolith stack for the Application Modernization Workshop/ Immersion Day
 Parameters:
   LatestAmiId:
     Type: AWS::SSM::Parameter::Value<AWS::EC2::Image::Id>
     Default: /aws/service/ami-amazon-linux-latest/amzn2-ami-hvm-x86_64-gp2
     Description: Use an AMI of your choosing, we recommend to use the latest available
 Resources:
-  MonoToMicroVPC-drdemo:
+  MonoToMicroVPCDR:
     Type: AWS::EC2::VPC
     Properties:
       CidrBlock: 10.0.0.0/16
@@ -15,22 +15,22 @@ Resources:
       InstanceTenancy: default
       Tags:
         - Key: Name
-          Value: MonoToMicroVPC-drdemo
-  MonoToMicroIGW-drdemo:
+          Value: MonoToMicroVPCDR
+  MonoToMicroIGWDR:
     Type: AWS::EC2::InternetGateway
     Properties:
       Tags:
         - Key: Name
-          Value: MonoToMicroIGW-drdemo
-  AttachGateway:
+          Value: MonoToMicroIGWDR
+  AttachGatewayDR:
     Type: AWS::EC2::VPCGatewayAttachment
     Properties:
-      VpcId: !Ref MonoToMicroVPC-drdemo
-      InternetGatewayId: !Ref MonoToMicroIGW-drdemo
-  MonoToMicroSubnet1-drdemo:
+      VpcId: !Ref MonoToMicroVPCDR
+      InternetGatewayId: !Ref MonoToMicroIGWDR
+  MonoToMicroSubnet1DR:
     Type: AWS::EC2::Subnet
     Properties:
-      VpcId: !Ref MonoToMicroVPC-drdemo
+      VpcId: !Ref MonoToMicroVPCDR
       CidrBlock: 10.0.0.0/24
       AvailabilityZone: !Select 
         - '0'
@@ -39,11 +39,11 @@ Resources:
       MapPublicIpOnLaunch: true
       Tags:
         - Key: Name
-          Value: MonoToMicroSubnet1-drdemo
-  MonoToMicroSubnet2-drdemo:
+          Value: MonoToMicroSubnet1DR
+  MonoToMicroSubnet2DR:
     Type: AWS::EC2::Subnet
     Properties:
-      VpcId: !Ref MonoToMicroVPC-drdemo
+      VpcId: !Ref MonoToMicroVPCDR
       CidrBlock: 10.0.1.0/24
       AvailabilityZone: !Select 
         - '1'
@@ -52,56 +52,56 @@ Resources:
       MapPublicIpOnLaunch: true
       Tags:
         - Key: Name
-          Value: MonoToMicroSubnet2-drdemo
-  MonoToMicroPublicRoutTable-drdemo:
+          Value: MonoToMicroSubnet2DR
+  MonoToMicroPublicRoutTableDR:
     Type: AWS::EC2::RouteTable
     Properties:
-      VpcId: !Ref MonoToMicroVPC-drdemo
+      VpcId: !Ref MonoToMicroVPCDR
       Tags:
         - Key: Name
-          Value: MonoToMicroPublicRoute-drdemo
-  MonoToMicroPublicRout-drdemo:
+          Value: MonoToMicroPublicRouteDR
+  MonoToMicroPublicRoutDR:
     Type: AWS::EC2::Route
-    DependsOn: AttachGateway
+    DependsOn: AttachGatewayDR
     Properties:
-      RouteTableId: !Ref MonoToMicroPublicRoutTable-drdemo
-      GatewayId: !Ref MonoToMicroIGW-drdemo
+      RouteTableId: !Ref MonoToMicroPublicRoutTableDR
+      GatewayId: !Ref MonoToMicroIGWDR
       DestinationCidrBlock: 0.0.0.0/0
-  MonoToMicroPublicSubnetRoutTableAssoc1-drdemo:
+  MonoToMicroPublicSubnetRoutTableAssoc1DR:
     Type: AWS::EC2::SubnetRouteTableAssociation
     Properties:
-      RouteTableId: !Ref MonoToMicroPublicRoutTable-drdemo
-      SubnetId: !Ref MonoToMicroSubnet1-drdemo
-  MonoToMicroPublicSubnetRoutTableAssoc2-drdemo:
+      RouteTableId: !Ref MonoToMicroPublicRoutTableDR
+      SubnetId: !Ref MonoToMicroSubnet1DR
+  MonoToMicroPublicSubnetRoutTableAssoc2DR:
     Type: AWS::EC2::SubnetRouteTableAssociation
     Properties:
-      RouteTableId: !Ref MonoToMicroPublicRoutTable-drdemo
-      SubnetId: !Ref MonoToMicroSubnet2-drdemo
-  DBSecurityGroup-drdemo:
+      RouteTableId: !Ref MonoToMicroPublicRoutTableDR
+      SubnetId: !Ref MonoToMicroSubnet2DR
+  DBSecurityGroupDR:
     Type: AWS::EC2::SecurityGroup
     Properties:
       GroupDescription: Open database for access
-      VpcId: !Ref MonoToMicroVPC-drdemo
+      VpcId: !Ref MonoToMicroVPCDR
       SecurityGroupIngress:
         - IpProtocol: tcp
           FromPort: 3306
           ToPort: 3306
-          SourceSecurityGroupId: !Ref EC2SecurityGroup-drdemo
+          SourceSecurityGroupId: !Ref EC2SecurityGroupDR
       Tags:
         - Key: Name
-          Value: MonoToMicroDBSG-drdemo
-  DBSubnetGroup-drdemo:
+          Value: MonoToMicroDBSGDR
+  DBSubnetGroupDR:
     Type: AWS::RDS::DBSubnetGroup
     Properties:
-      DBSubnetGroupDescription: MonoToMicroDBSubnetGroup-drdemo
+      DBSubnetGroupDescription: MonoToMicroDBSubnetGroupDR
       SubnetIds:
-        - !Ref MonoToMicroSubnet1-drdemo
-        - !Ref MonoToMicroSubnet2-drdemo
-  EC2SecurityGroup-drdemo:
+        - !Ref MonoToMicroSubnet1DR
+        - !Ref MonoToMicroSubnet2DR
+  EC2SecurityGroupDR:
     Type: AWS::EC2::SecurityGroup
     Properties:
       GroupDescription: Open App access
-      VpcId: !Ref MonoToMicroVPC-drdemo
+      VpcId: !Ref MonoToMicroVPCDR
       SecurityGroupIngress:
         - IpProtocol: tcp
           FromPort: 80
@@ -122,29 +122,29 @@ Resources:
           CidrIp: 0.0.0.0/0
       Tags:
         - Key: Name
-          Value: MonoToMicroEC2SG-drdemo
-  EC2SecurityGroupDBRule-drdemo:
+          Value: MonoToMicroEC2SGDR
+  EC2SecurityGroupDBRuleDR:
     Type: AWS::EC2::SecurityGroupEgress
     Properties:
-      GroupId: !Ref EC2SecurityGroup-drdemo
+      GroupId: !Ref EC2SecurityGroupDR
       IpProtocol: tcp
       FromPort: 3306
       ToPort: 3306
-      DestinationSecurityGroupId: !Ref DBSecurityGroup-drdemo
-  InstanceLogGroup-drdemo:
+      DestinationSecurityGroupId: !Ref DBSecurityGroupDR
+  InstanceLogGroupDR:
     Type: AWS::Logs::LogGroup
     Properties:
       RetentionInDays: 7
-  S3InstanceProfile-drdemo:
+  S3InstanceProfileDR:
     Type: AWS::IAM::InstanceProfile
     Properties:
       Path: /
       Roles:
-        - !Ref S3Role
-  S3Policy-drdemo:
+        - !Ref S3RoleDR
+  S3PolicyDR:
     Type: AWS::IAM::Policy
     Properties:
-      PolicyName: S3Policy-drdemo
+      PolicyName: S3PolicyDR
       PolicyDocument:
         Statement:
           - Effect: Allow
@@ -156,29 +156,29 @@ Resources:
               - s3:PutObjectAcl
             Resource:
               - !GetAtt 
-                - UIBucket
+                - UIBucketDR
                 - Arn
               - !GetAtt 
-                - AssetBucket
+                - AssetBucketDR
                 - Arn
               - !Join 
                 - ''
                 - - !GetAtt 
-                    - UIBucket
+                    - UIBucketDR
                     - Arn
                   - /*
               - !Join 
                 - ''
                 - - !GetAtt 
-                    - AssetBucket
+                    - AssetBucketDR
                     - Arn
                   - /*
       Roles:
-        - !Ref S3Role
-  S3Role:
+        - !Ref S3RoleDR
+  S3RoleDR:
     Type: AWS::IAM::Role
     Properties:
-      RoleName: MonoToMicroRole-drdemo
+      RoleName: MonoToMicroRoleDR
       AssumeRolePolicyDocument:
         Version: 2012-10-17
         Statement:
@@ -192,36 +192,36 @@ Resources:
         - arn:aws:iam::aws:policy/AmazonSSMManagedInstanceCore
         - arn:aws:iam::aws:policy/CloudWatchAgentServerPolicy
       Path: /
-  DBInstance:
+  DBInstanceDR:
     Type: AWS::RDS::DBInstance
     DeletionPolicy: Delete
     Properties:
-      DBName: MonoToMicroDB-drdemo
-      DBInstanceIdentifier: MonoToMicroDB-drdemo
+      DBName: MonoToMicroDBDR
+      DBInstanceIdentifier: MonoToMicroDBDR
       Engine: MySQL
       DBInstanceClass: db.t2.micro
       Port: 3306
       MasterUsername: MonoToMicroUser
       MasterUserPassword: MonoToMicroPassword
       VPCSecurityGroups:
-        - !Ref DBSecurityGroup-drdemo
+        - !Ref DBSecurityGroupDR
       AllocatedStorage: 5
-      DBSubnetGroupName: !Ref DBSubnetGroup-drdemo
+      DBSubnetGroupName: !Ref DBSubnetGroupDR
       MultiAZ: false
       Tags:
         - Key: Name
-          Value: MonoToMicroDB-drdemo
-  UIBucket:
+          Value: MonoToMicroDBDR
+  UIBucketDR:
     Type: AWS::S3::Bucket
     Properties:
       WebsiteConfiguration:
         ErrorDocument: error.html
         IndexDocument: index.html
-  AssetBucket:
+  AssetBucketDR:
     Type: AWS::S3::Bucket
-  EC2Instance:
+  EC2InstanceDR:
     Type: AWS::EC2::Instance
-    DependsOn: DBInstance
+    DependsOn: DBInstanceDR
     CreationPolicy:
       ResourceSignal:
         Count: 1
@@ -261,7 +261,7 @@ Resources:
                 - ''
                 - - 'sudo mysql -u MonoToMicroUser -h '
                   - !GetAtt 
-                    - DBInstance
+                    - DBInstanceDR
                     - Endpoint.Address
                   - |2
                      -P 3306 -pMonoToMicroPassword < /home/ec2-user/MonoToMicro/MonoToMicroLegacy/database/create_tables.sql
@@ -270,7 +270,7 @@ Resources:
                 - ''
                 - - export MONO_TO_MICRO_DB_ENDPOINT=
                   - !GetAtt 
-                    - DBInstance
+                    - DBInstanceDR
                     - Endpoint.Address
             3-gradle-install-build:
               command: !Join 
@@ -306,11 +306,11 @@ Resources:
                   - |+
 
                   - UI_RANDOM_NAME=
-                  - !Ref UIBucket
+                  - !Ref UIBucketDR
                   - |+
 
                   - ASSETS_RANDOM_NAME=
-                  - !Ref AssetBucket
+                  - !Ref AssetBucketDR
                   - |+
 
                   - >
@@ -381,13 +381,13 @@ Resources:
                     #!/bin/bash
                   - export Database=
                   - !GetAtt 
-                    - DBInstance
+                    - DBInstanceDR
                     - Endpoint.Address
                   - |+
 
                   - export MONO_TO_MICRO_DB_ENDPOINT=
                   - !GetAtt 
-                    - DBInstance
+                    - DBInstanceDR
                     - Endpoint.Address
                   - |+
 
@@ -396,11 +396,11 @@ Resources:
                   - |+
 
                   - export UI_RANDOM_NAME=
-                  - !Ref UIBucket
+                  - !Ref UIBucketDR
                   - |+
 
                   - export ASSETS_RANDOM_NAME=
-                  - !Ref AssetBucket
+                  - !Ref AssetBucketDR
                   - |+
 
                   - |
@@ -444,14 +444,14 @@ Resources:
                     - ''
                     - - '                        "log_group_name":'
                       - '"'
-                      - !Ref InstanceLogGroup
+                      - !Ref InstanceLogGroupDR
                       - |
                         ",
                   - !Join 
                     - ''
                     - - '                        "log_stream_name":'
                       - '"'
-                      - !Ref InstanceLogGroup
+                      - !Ref InstanceLogGroupDR
                       - |
                         -app",
                   - |2
@@ -488,10 +488,10 @@ Resources:
     Properties:
       InstanceType: t3.small
       ImageId: !Ref LatestAmiId
-      SubnetId: !Ref MonoToMicroSubnet1-drdemo
+      SubnetId: !Ref MonoToMicroSubnet1DR
       SecurityGroupIds:
-        - !Ref EC2SecurityGroup-drdemo
-      IamInstanceProfile: !Ref S3InstanceProfile-drdemo
+        - !Ref EC2SecurityGroupDR
+      IamInstanceProfile: !Ref S3InstanceProfileDR
       UserData: !Base64 
         'Fn::Join':
           - ''
@@ -518,54 +518,54 @@ Resources:
 
       Tags:
         - Key: Name
-          Value: MonoToMicroEC2-drdemo
+          Value: MonoToMicroEC2DR
   
-  PublicDnsNameSSMParam:
+  PublicDnsNameSSMParamDR:
     Type: AWS::SSM::Parameter
     Properties:
-      Name: UniShopPublicDnsName-drdemo
+      Name: UniShopPublicDnsName
       Value: !Join 
         - /
         - - 'http:/'
           - !GetAtt 
-            - EC2Instance
+            - EC2InstanceDR
             - PublicDnsName
       Type: String
       Description: Monolith Public DNS Param
   
-  VpcIdSSMParam:
+  VpcIdSSMParamDR:
     Type: AWS::SSM::Parameter
     Properties:
-      Name: UniShopVpcId-drdemo
-      Value: !Ref MonoToMicroVPC-drdemo
+      Name: UniShopVpcId
+      Value: !Ref MonoToMicroVPCDR
       Type: String
       Description: Monolith VPC ID
 
-  LambdaAssetBucketSSMParam:
+  LambdaAssetBucketSSMParamDR:
     Type: AWS::SSM::Parameter
     Properties:
-      Name: LambdaAssetBucketName
+      Name: LambdaAssetBucketNameDR
       Type: String
-      Value: !Ref AssetBucket
+      Value: !Ref AssetBucketDR
 
 Outputs:
   PublicDns:
     Value: !GetAtt 
-      - PublicDnsNameSSMParam
+      - PublicDnsNameSSMParamDR
       - Value
     Description: Server Public DNS
   VpcId:
     Value: !GetAtt 
-      - VpcIdSSMParam
+      - VpcIdSSMParamDR
       - Value
   AssetBucket:
-    Value: !Ref AssetBucket
+    Value: !Ref AssetBucketDR
     Description: S3 Bucket containing the compiled Lambda function
   UIBucket:
-    Value: !Ref UIBucket
+    Value: !Ref UIBucketDR
     Description: S3 Bucket containing the UniShop website
   WebsiteURL:
     Value: !GetAtt 
-      - UIBucket
+      - UIBucketDR
       - WebsiteURL
     Description: URL for UniShop website hosted on S3
