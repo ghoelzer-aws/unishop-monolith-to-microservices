@@ -536,7 +536,7 @@ Resources:
   VpcIdSSMParamDR:
     Type: AWS::SSM::Parameter
     Properties:
-      Name: UniShopVpcId
+      Name: UniShopVpcIdDR
       Value: !Ref MonoToMicroVPCDR
       Type: String
       Description: Monolith VPC ID
